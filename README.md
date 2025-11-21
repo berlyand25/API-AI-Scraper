@@ -31,14 +31,14 @@ The system follows a modular pipeline:
 ## ⚡ Performance & Limitations
 
 ### Performance Optimizations
-* **Quantization:** The model works with quantization to minimize memory footprint without significant degradation in reasoning quality.
-* **Caching:** Semantic caching is implemented to store frequently asked queries, reducing GPU load.
-* **Concurrency:** Asynchronous non-blocking endpoints allow for handling multiple requests simultaneously.
+* **Adaptive Extraction:** Uses LLM to intelligently parse data, making it resilient to HTML layout changes.
+* **Cost-Efficient:** Runs entirely locally using Ollama, eliminating external API costs.
+* **Async Architecture:** Built on FastAPI to handle concurrent requests efficiently.
 
 ### Limitations
-* **Context Window:** The model is limited to [128k/8k] context length. Inputs exceeding this will be truncated.
-* **Knowledge Cutoff:** The model's internal knowledge is limited to its training data cutoff; it does not have real-time internet access unless provided via context.
-* **Hardware Dependencies:** While optimized, performance scales heavily with available GPU memory/CUDA cores.
+* **Inference Latency:** Slower than traditional scrapers due to Generative AI processing time.
+* **Visible Content Only:** Cannot access data hidden via CSS or non-rendered DOM elements.
+* **Context Window:** Extremely large web pages may be truncated to fit the model's token limit.
 
 ---
 
@@ -76,6 +76,66 @@ uvicorn main:app --reload
 ```
 
 ## 📡 API Documentation
+
+The API is built using **FastAPI**. You can access the interactive Swagger documentation at `http://127.0.0.1:8000/docs` when the server is running.
+
+### 1. Health Check
+**GET** `/`
+
+Verifies that the API server is running and ready to accept requests.
+
+**Response:**
+```json
+{
+  "message": "Welcome to the AI Web Scraper API!"
+}
+```
+
+### 2. AI Web Scraper
+POST /parse
+
+This is the main endpoint. It accepts a URL and a natural language query, performs RAG (Retrieval-Augmented Generation) on the page content, and attempts to extract structured JSON data.
+
+**Request Body:**
+
+* url (string) : The target website URL to be scraped.
+* query (string) : What you want to extract.
+
+**Example Request:**
+```json
+{
+  "url": "https://books.toscrape.com/",
+  "query": "Can you return me the books: name and price?"
+}
+```
+
+**Success Response (200 OK)**
+
+Returns the extracted data along with execution metadata.
+
+```json
+{
+  "result": [
+    {
+      "name": "Book 1",
+      "price": "$19.99"
+    },
+    {
+      "name": "Book 2",
+      "price": "$29.99"
+    }
+  ],
+  "message": "Found 2 record(s)",
+  "metadata": {
+    "processing_time_ms": 4502
+  }
+}
+```
+
+**Error Response**
+* **404 Not Found** : **No Data Found**: The LLM could not find any relevant information matching your query in the provided URL context.
+* **422 Unprocessable Entity** : **Validation Error**: The request body is missing required fields (url or query) or has the wrong data type.
+* **500 Internal Server Error** : **Parsing Failed**: The LLM generated a response, but it was not valid JSON. This usually happens if the model hallucinates or includes conversational text outside the JSON block.
 
 ## 🎥 Demo
 [![Watch the demo](thumbnail.png)](https://drive.google.com/file/d/1xJf9YGKTjJs6Bx593eDgWxAJJemvAcSR/view?usp=sharing)
