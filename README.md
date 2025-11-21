@@ -53,8 +53,8 @@ Follow these steps to get the API running locally.
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/](https://github.com/)[your-username]/[repo-name].git
-cd [repo-name]
+git clone https://github.com/berlyand25/API-AI-Scraper.git
+cd API-AI-Scraper
 ```
 ### 2. Create a Virtual Environment
 ```bash
